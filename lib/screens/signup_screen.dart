@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:getx_course/controller/signup_controllr.dart';
 import 'package:lottie/lottie.dart';
 
 import 'home_screen.dart';
@@ -16,16 +17,13 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController passwordConfirmController = TextEditingController();
   bool _obsecurePassword = true ;
   bool _obsecureConfirmPassword = true ;
   final GetStorage box = GetStorage();
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(SignUpController());
     return Scaffold(
       body:Padding(
         padding: const EdgeInsets.symmetric(vertical: 80.0, horizontal: 35),
@@ -38,7 +36,7 @@ class _SignupScreenState extends State<SignupScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 20,left: 20),
                 child: TextField(
-                  controller: nameController,
+                  controller: controller.nameController,
                   decoration: InputDecoration(
                       prefix: Icon(EvaIcons.personOutline),
                       hintText: "Enter Name",
@@ -55,7 +53,7 @@ class _SignupScreenState extends State<SignupScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 20,left: 20),
                 child: TextField(
-                  controller: emailController,
+                  controller: controller.emailController,
                   decoration: InputDecoration(
                       prefix: Icon(Icons.email),
                       hintText: "Enter E-mail",
@@ -72,7 +70,7 @@ class _SignupScreenState extends State<SignupScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 20,left: 20),
                 child: TextField(
-                  controller: passwordController,
+                  controller: controller.passwordController,
                   obscureText: _obsecurePassword,
                   decoration: InputDecoration(
                       prefix: Icon(Icons.password),
@@ -96,7 +94,7 @@ class _SignupScreenState extends State<SignupScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 20,left: 20),
                 child: TextField(
-                  controller: passwordConfirmController,
+                  controller: controller.passwordConfirmController,
                   obscureText: _obsecureConfirmPassword,
                   decoration: InputDecoration(
                       prefix: Icon(Icons.password),
@@ -126,18 +124,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       padding: EdgeInsets.symmetric(vertical: 20 , horizontal: 50)
                   ),
                   onPressed: (){
-                    if(passwordConfirmController.value != passwordController.value){
-                      Get.snackbar("Error", "Password Not Match");
-                    }else{
-                      Get.offAll(HomeScreen());
-
-                      box.write("name", nameController.text);
-                      box.write("email", emailController.text);
-
-                      print("Succes");
-                      print("name ${nameController.text}");
-                      print("email ${emailController.text}");
-                    }
+                    controller.register();
                   },
                   child: Text("Sign up", style: TextStyle(color: Colors.white),)
               ),

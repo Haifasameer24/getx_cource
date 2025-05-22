@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:getx_course/controller/login_controller.dart';
 import 'package:getx_course/screens/home_screen.dart';
 import 'package:getx_course/screens/signup_screen.dart';
 import 'package:lottie/lottie.dart';
@@ -14,15 +15,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final loginController = Get.put(LoginController());
+
   bool _obsecurePassword = true ;
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
+        body:Padding(
         padding: const EdgeInsets.symmetric(vertical: 80.0, horizontal: 35),
         child: Center(
           child: Column(
@@ -32,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 20,left: 20),
                 child: TextField(
-                  controller: emailController,
+                  controller: loginController.emailController,
                   decoration: InputDecoration(
                     prefix: Icon(Icons.email),
                     hintText: "Enter E-mail",
@@ -49,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 20,left: 20),
                 child: TextField(
-                  controller: passwordController,
+                  controller: loginController.passwordController,
                   obscureText: _obsecurePassword,
                   decoration: InputDecoration(
                     prefix: Icon(Icons.password),
@@ -79,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: EdgeInsets.symmetric(vertical: 20 , horizontal: 50)
                 ),
                   onPressed: (){
-                  Get.offAll(HomeScreen());
+                  loginController.login();
                   },
                   child: Text("Login", style: TextStyle(color: Colors.white),)
               ),
