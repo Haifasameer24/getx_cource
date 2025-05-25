@@ -47,7 +47,8 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.only(right: 20,left: 20),
-                child: TextField(
+                child: TextFormField(
+                  enabled: true,
                   controller: loginController.passwordController,
                   obscureText: _obsecurePassword,
                   decoration: InputDecoration(
