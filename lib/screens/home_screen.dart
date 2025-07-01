@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context) => AddButton(),
             );
           },
-          child: Icon(Icons.add, size: 30),
+          child: Icon(Icons.add, size: 25),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
