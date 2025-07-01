@@ -3,29 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:getx_course/screens/splash_screen.dart';
-
+import 'controller/them_controller.dart';
 import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await GetStorage.init();
-
+  Get.put(ThemeController()); // <-- inject the controller
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  // This widget is the root of your application.
+
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    final themeController = Get.find<ThemeController>();
+
+    return Obx(() => GetMaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: themeController.isDarkMode.value
+          ? ThemeMode.dark
+          : ThemeMode.light,
       home: SplashScreen(),
-    );
+    ));
   }
 }
-

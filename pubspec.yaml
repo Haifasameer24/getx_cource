@@ -42,7 +42,11 @@ dependencies:
   firebase_core: ^3.13.1
   firebase_auth: ^5.5.4
   cloud_firestore: ^5.6.8
-  
+  sidebarx: ^0.17.1
+  horizontal_list: ^0.0.7
+  drop_down_list: ^2.0.0
+  flutter_slidable: ^3.0.0
+
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +72,12 @@ flutter:
   uses-material-design: true
   assets:
     - assets/lottie/
+    - assets/images/
+
+  fonts:
+    - family: RobotoSlab
+      fonts:
+        - asset: assets/fonts/RobotoSlab-Regular.ttf
 
   # To add assets to your application, add an assets section, like this:
 

@@ -1,9 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:getx_course/controller/login_controller.dart';
-import 'package:getx_course/screens/home_screen.dart';
 import 'package:getx_course/screens/signup_screen.dart';
 import 'package:lottie/lottie.dart';
 
@@ -16,86 +13,115 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final loginController = Get.put(LoginController());
+  bool _obsecurePassword = true;
 
-  bool _obsecurePassword = true ;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body:Padding(
-        padding: const EdgeInsets.symmetric(vertical: 80.0, horizontal: 35),
+      body: Container(
         child: Center(
-          child: Column(
-            children: [
-              Lottie.asset("assets/lottie/splash.json", width: 90),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(right: 20,left: 20),
-                child: TextField(
-                  controller: loginController.emailController,
-                  decoration: InputDecoration(
-                    prefix: Icon(Icons.email),
-                    hintText: "Enter E-mail",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Lottie.asset("assets/lottie/splash.json", width: 150),
+                SizedBox(height: 10),
+                Text(
+                  "Welcome Back!",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(right: 20,left: 20),
-                child: TextFormField(
-                  enabled: true,
-                  controller: loginController.passwordController,
-                  obscureText: _obsecurePassword,
-                  decoration: InputDecoration(
-                    prefix: Icon(Icons.password),
-                      suffix: GestureDetector(
-                        onTap: () => setState(()=> _obsecurePassword = !_obsecurePassword),
-                          child: Icon(
-                            _obsecurePassword ?
-                              Icons.remove_red_eye : Icons.remove_red_eye_outlined
-                          )),
-                    hintText: "Enter Password",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200
+                SizedBox(height: 10),
+                Container(
+                  padding: EdgeInsets.all(20),
+                  margin: EdgeInsets.only(top: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: loginController.emailController,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(Icons.email),
+                          hintText: "Enter your email",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: loginController.passwordController,
+                        obscureText: _obsecurePassword,
+                        decoration: InputDecoration(
+                          prefixIcon: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _obsecurePassword = !_obsecurePassword;
+                              });
+                            },
+                            child: Icon(_obsecurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility),
+                          ),
+                          hintText: "Enter your password",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          loginController.login();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade700,
+                          padding: EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 60),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          "Login",
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () {
+                          Get.to(SignupScreen());
+                        },
+                        child: Text(
+                          "Don't have an account? Sign Up",
+                          style: TextStyle(color: Colors.blue.shade700),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade700,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)
-                  ),
-                  padding: EdgeInsets.symmetric(vertical: 20 , horizontal: 50)
-                ),
-                  onPressed: (){
-                  loginController.login();
-                  },
-                  child: Text("Login", style: TextStyle(color: Colors.white),)
-              ),
-              Spacer(),
-              TextButton(
-                  onPressed: (){
-                    Get.to(SignupScreen());
-                  },
-                  child: Text("Don't have an account ? SignUp", style: TextStyle(color: Colors.blue.shade700),),
-              )
-
-            ],
+              ],
+            ),
           ),
         ),
-      )
-
+      ),
     );
   }
 }
