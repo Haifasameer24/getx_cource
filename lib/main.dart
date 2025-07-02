@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:getx_course/screens/splash_screen.dart';
+import 'package:getx_course/services/notification_service.dart';
 import 'controller/them_controller.dart';
 import 'firebase_options.dart';
 void main() async {
@@ -10,8 +11,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationService.init();
   await GetStorage.init();
-  Get.put(ThemeController()); // <-- inject the controller
+  Get.put(ThemeController());
   runApp(const MyApp());
 }
 

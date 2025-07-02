@@ -1,20 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:getx_course/models/tsks_model.dart';
-
-import 'notifacation_controller.dart';
+import '../services/notification_service.dart';
 
 class TaskController extends GetxController {
 
   @override
   void onInit() {
     super.onInit();
-    streamTasks(); // تحميل المهام عند تشغيل الكنترولر
+    streamTasks();
   }
 
 
@@ -23,6 +21,9 @@ class TaskController extends GetxController {
   final taskDescriptionController = TextEditingController();
   final statusTaskController = TextEditingController();
    final taskCatController = TextEditingController();
+
+  DateTime? realDueDate;
+
 
   final box = GetStorage();
 
@@ -86,13 +87,16 @@ class TaskController extends GetxController {
           .doc(task.id)
           .set(task.toJson());
       Get.back();
-      Get.snackbar("نجاح", "تم إضافة المهمة بنجاح ✅");
-
+      await NotificationService.showInstantNotification(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title: 'Done',
+        body: 'Task added!',
+      );
       taskNameController.clear();
       taskTimeController.clear();
       taskDescriptionController.clear();
     } catch (e) {
-      Get.snackbar("فشل", e.toString());
+      Get.snackbar("Error", e.toString());
     }
     update();
   }

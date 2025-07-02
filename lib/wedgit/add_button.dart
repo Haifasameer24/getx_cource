@@ -1,23 +1,31 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:getx_course/services/notification_service.dart';
 import '../controller/addCatgory_controller.dart';
 import '../controller/task_controller.dart';
-import '../models/tsks_model.dart';
 
-class AddButton extends StatelessWidget {
+class AddButton extends StatefulWidget {
+  const AddButton({super.key});
+  @override
+  State<AddButton> createState() => _AddButtonState();
+}
+
+class _AddButtonState extends State<AddButton> {
   final taskController = Get.find<TaskController>();
-  final categoryController = Get.find<CategoryController>();
+  DateTime? selectedDateTime;
+  int? hour;
+  int? day;
+  int? month;
+  int? year;
+  int? minute;
+  String? notiTitle;
+  String? notiDesc;
 
-  AddButton({Key? key}) : super(key: key);
+  final categoryController = Get.find<CategoryController>();
 
   @override
   Widget build(BuildContext context) {
-    DateTime? selectedDateTime;
-    String? selectedCategory;
-
     return StatefulBuilder(
       builder: (context, setModalState) {
         return Padding(
@@ -27,11 +35,10 @@ class AddButton extends StatelessWidget {
             top: 24,
             bottom: MediaQuery.of(context).viewInsets.bottom + 16,
           ),
-          child: SingleChildScrollView(  // لمنع overflow عند ظهور الكيبورد
+          child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // حقل اسم المهمة
                 TextField(
                   controller: taskController.taskNameController,
                   decoration: InputDecoration(
@@ -40,8 +47,6 @@ class AddButton extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 12),
-
-                // حقل الوصف
                 TextField(
                   controller: taskController.taskDescriptionController,
                   maxLines: 3,
@@ -51,35 +56,20 @@ class AddButton extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 12),
-
-                // اختيار التاريخ والوقت
                 InkWell(
                   onTap: () async {
-                    DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2100),
-                    );
-
-                    if (pickedDate != null) {
-                      TimeOfDay? pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.now(),
-                      );
-
-                      if (pickedTime != null) {
-                        final combined = DateTime(
-                          pickedDate.year,
-                          pickedDate.month,
-                          pickedDate.day,
-                          pickedTime.hour,
-                          pickedTime.minute,
-                        );
-                        setModalState(() {
-                          selectedDateTime = combined;
-                        });
-                      }
+                    final pickedDateTime = await pickDateTime(context, initialDate: selectedDateTime ?? DateTime.now());
+                    if (pickedDateTime != null) {
+                      setModalState(() {
+                        selectedDateTime = pickedDateTime;
+                        taskController.taskTimeController.text = pickedDateTime.toString();
+                        taskController.realDueDate = pickedDateTime;
+                        hour = pickedDateTime.hour;
+                        minute = pickedDateTime.minute;
+                        month = pickedDateTime.month;
+                        day = pickedDateTime.day;
+                        year = pickedDateTime.year;
+                      });
                     }
                   },
                   child: Container(
@@ -90,22 +80,19 @@ class AddButton extends StatelessWidget {
                     ),
                     width: double.infinity,
                     child: Text(
-                      selectedDateTime != null
-                          ? 'Due: ${selectedDateTime.toString()}'
+                      taskController.taskTimeController.text.isNotEmpty
+                          ? 'Due: ${taskController.taskTimeController.text}'
                           : 'Select Due Date & Time',
                       style: TextStyle(
-                        color: selectedDateTime != null ? Colors.black : Colors.grey,
+                        color: taskController.taskTimeController.text.isNotEmpty ? Colors.black : Colors.grey,
                       ),
                     ),
                   ),
                 ),
                 SizedBox(height: 20),
-
                 Obx(() {
                   if (categoryController.categories.isEmpty) {
-                    return const Center(
-                      child: Text('Loading categories...'),
-                    );
+                    return const Center(child: Text('Loading categories...'));
                   }
                   return SizedBox(
                     width: 500,
@@ -114,8 +101,8 @@ class AddButton extends StatelessWidget {
                         labelText: 'Select Category',
                         border: OutlineInputBorder(),
                       ),
-                      value: categoryController.categories.any((cat) => cat.name == selectedCategory)
-                          ? selectedCategory
+                      value: taskController.taskCatController.text.isNotEmpty
+                          ? taskController.taskCatController.text
                           : null,
                       items: categoryController.categories
                           .map((cat) => DropdownMenuItem(
@@ -125,7 +112,6 @@ class AddButton extends StatelessWidget {
                           .toList(),
                       onChanged: (selected) {
                         setModalState(() {
-                          selectedCategory = selected;
                           taskController.taskCatController.text = selected!;
                         });
                       },
@@ -133,68 +119,52 @@ class AddButton extends StatelessWidget {
                     ),
                   );
                 }),
-
                 SizedBox(height: 16),
 
+                // زر Done
                 ElevatedButton(
                   onPressed: () async {
-                    final name = taskController.taskNameController.text.trim();
-                    final desc = taskController.taskDescriptionController.text.trim();
-
-                    if (name.isEmpty || desc.isEmpty) {
-                      Get.snackbar("Missing Fields", "Please enter task name and description.");
+                    if (kDebugMode) {
+                      print("Selected DateTime: ${taskController.taskTimeController.text}");
+                    }
+                    if (kDebugMode) {
+                      print("Selected Category: ${taskController.taskCatController.text}");
+                    }
+                    notiTitle = taskController.taskNameController.text;
+                    notiDesc = taskController.taskDescriptionController.text;
+                    if (taskController.taskTimeController.text.isEmpty) {
+                      Get.snackbar("Error", "Please add Date & Time");
+                      return;
+                    }
+                    if (taskController.taskNameController.text.trim().isEmpty) {
+                      Get.snackbar("Error", "Please add task name");
+                      return;
+                    }
+                    if (taskController.taskCatController.text.isEmpty) {
+                      Get.snackbar("Error", "Please select category");
                       return;
                     }
 
-                    if (selectedCategory == null) {
-                      Get.snackbar("Missing Category", "Please select a category.");
+                    if (taskController.realDueDate == null) {
+                      Get.snackbar("Error", "Please add Date & Time");
                       return;
                     }
-
-                    if (selectedDateTime == null) {
-                      Get.snackbar("Missing Date", "Please select due date & time.");
-                      return;
-                    }
-
-                    final user = FirebaseAuth.instance.currentUser;
-                    if (user == null) {
-                      Get.snackbar("Error", "User not logged in");
-                      return;
-                    }
-
-                    final userId = user.uid;
-                    final docRef = FirebaseFirestore.instance
-                        .collection("users")
-                        .doc(userId)
-                        .collection("tasks")
-                        .doc();
-
-                    final newTask = TaskModel(
-                      id: docRef.id,
-                      name: name,
-                      description: desc,
-                      userId: userId,
-                      createdAt: DateTime.now(),
-                      dueDate: selectedDateTime!,
-                      status: TaskStatus.upcoming,
-                      cat: selectedCategory!,
+                    await taskController.addTask(dueDate: taskController.realDueDate!);
+                    await NotificationService.scheduleNotification(
+                      title:  notiTitle.toString(),
+                      body: notiDesc.toString(),
+                      day: day!,
+                      month: month!,
+                      year: year!,
+                      hour: hour!,
+                      minute:minute!,
                     );
-
-                    try {
-                      await docRef.set(newTask.toJson());
-
-                      taskController.tasks.add(newTask);
-                      Navigator.pop(context);
-                      Get.snackbar("Task Added", "تمت إضافة المهمة بنجاح");
-                    } catch (e) {
-                      Get.snackbar("Error", e.toString());
-                    }
                   },
-                  child: const Text('Done'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 150),
                     textStyle: const TextStyle(fontSize: 18),
                   ),
+                  child: const Text('Done'),
                 ),
               ],
             ),
@@ -202,5 +172,36 @@ class AddButton extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<DateTime?> pickDateTime(BuildContext context, {DateTime? initialDate}) async {
+    final DateTime? date = await showDatePicker(
+      context: context,
+      initialDate: initialDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+
+    if (date == null) return null;
+
+    final TimeOfDay? time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (time == null) return null;
+
+    final finalDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+
+    if (kDebugMode) {
+      print("Picked DateTime: $finalDateTime");
+    }
+    return finalDateTime;
   }
 }
