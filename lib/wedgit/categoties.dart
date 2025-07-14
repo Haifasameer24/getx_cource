@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:horizontal_list/horizontal_list.dart';
-
 import '../controller/addCatgory_controller.dart';
 import '../screens/CategoryDetailPage.dart';
 
-class ListTask extends StatelessWidget {
+class ListCatigroies extends StatelessWidget {
   final CategoryController addCatogory = Get.put(CategoryController());
 
   @override
@@ -32,17 +30,16 @@ class ListTask extends StatelessWidget {
 
         // Horizontal List (with Obx)
         Obx(() {
-          return HorizontalListView(
-            width: double.infinity,
-            height: 100,
-            list: [
-              ...addCatogory.filteredCategories
-                  .map((c) => taskCard(context, c.name, c.color))
-                  .toList(),
-              addCard(context),
-            ],
-            durationAnimation: Duration(milliseconds: 300),
-            enableManualScroll: true,
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                ...addCatogory.filteredCategories
+                    .map((c) => taskCard(context, c.name, c.color))
+                    .toList(),
+                addCard(context),
+              ],
+            ),
           );
         }),
       ],
@@ -55,22 +52,27 @@ class ListTask extends StatelessWidget {
         Get.to(() => CategoryDetailPage(catName: title));
       },
       child: Container(
-        width: 100,
-        margin: EdgeInsets.symmetric(horizontal: 8),
-        padding: EdgeInsets.all(12),
+        margin: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Center(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white10
+                  : Colors.black12,
+              blurRadius: 10,
+              offset: Offset(0, 4),
             ),
-            textAlign: TextAlign.center,
+          ],
+        ),
+        child: Text(
+          title,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -178,29 +180,32 @@ class ListTask extends StatelessWidget {
         );
       },
       child: Container(
-        width: 100,
-        margin: EdgeInsets.symmetric(horizontal: 8),
-        padding: EdgeInsets.all(12),
+        margin: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            ),
+          ],
           border: Border.all(
             color: Theme.of(context).dividerColor,
           ),
         ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.add, color: Theme.of(context).iconTheme.color, size: 30),
-              SizedBox(height: 8),
-              Text(
-                'Add Category',
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.add, color: Theme.of(context).iconTheme.color, size: 18),
+            SizedBox(width: 6),
+            Text(
+              'Add',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
         ),
       ),
     );

@@ -1,34 +1,36 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:getx_course/models/tsks_model.dart';
-
-import 'notifacation_controller.dart';
+import '../models/tsks_model.dart';
+import '../services/notification_services.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class TaskController extends GetxController {
+  final taskNameController = TextEditingController();
+  final taskTimeController = TextEditingController();
+  final taskDescriptionController = TextEditingController();
+  final taskCatController = TextEditingController();
+
+  final box = GetStorage();
+  DateTime? realDueDate;
+  String? taskTitle;
+  String? taskDesc;
+  DateTime? taskDate;
+  int? year;
+  int? month;
+  int? day;
+  int? hour;
+  int? minute;
+
+  RxList<TaskModel> tasks = <TaskModel>[].obs;
+  RxString searchText = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
-    streamTasks(); // تحميل المهام عند تشغيل الكنترولر
+    streamTasks();
   }
-
-
-  final taskNameController = TextEditingController();
-  final taskTimeController = TextEditingController();
-  final taskDescriptionController = TextEditingController();
-  final statusTaskController = TextEditingController();
-   final taskCatController = TextEditingController();
-
-  final box = GetStorage();
-
-  RxList<TaskModel> tasks = <TaskModel>[].obs;
-  RxString searchText=' '.obs;
-
 
   void streamTasks() {
     final user = box.read("id");
@@ -47,8 +49,9 @@ class TaskController extends GetxController {
       tasks.value = snapshot.docs
           .map((doc) => TaskModel.fromJson(doc.data()))
           .toList();
-    },);
+    });
   }
+
   List<TaskModel> get filteredTasks {
     if (searchText.value.trim().isEmpty) return tasks;
     final query = searchText.value.toLowerCase();
@@ -57,16 +60,46 @@ class TaskController extends GetxController {
     }).toList();
   }
 
-  Future addTask({required DateTime dueDate}) async {
-    final user = box.read("id");
+  Future<void> addTaskWithNotification() async {
+    if (taskTitle == null || taskTitle!.isEmpty ||
+        taskDesc == null || taskDesc!.isEmpty ||
+        taskDate == null ||
+        year == null || month == null || day == null || hour == null || minute == null) {
+      Get.snackbar("خطأ", "يرجى تعبئة كل الحقول وتحديد التاريخ والوقت");
+      return;
+    }
 
+    final scheduledDate = tz.TZDateTime(
+      tz.local,
+      year!,
+      month!,
+      day!,
+      hour!,
+      minute!,
+    );
+
+    if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local))) {
+      Get.snackbar("خطأ", "يجب اختيار وقت في المستقبل");
+      return;
+    }
+    await addTask(dueDate: taskDate!);
+    await NotificationService.scheduleNotification(
+      title: "$taskTitle",
+      body: "$taskDesc",
+      year: year!,
+      month: month!,
+      day: day!,
+      hour: hour!,
+      minute: minute!,
+    );
+  }
+  Future<void> addTask({required DateTime dueDate}) async {
+    final user = box.read("id");
     if (user == null) {
       Get.snackbar("Error", "User not logged in");
       return;
     }
-
     final taskId = FirebaseFirestore.instance.collection('tasks').doc().id;
-
     final task = TaskModel(
       id: taskId,
       name: taskNameController.text.trim(),
@@ -88,16 +121,27 @@ class TaskController extends GetxController {
       Get.back();
       Get.snackbar("نجاح", "تم إضافة المهمة بنجاح ✅");
 
-      taskNameController.clear();
-      taskTimeController.clear();
-      taskDescriptionController.clear();
+      clearFields();
     } catch (e) {
       Get.snackbar("فشل", e.toString());
     }
     update();
   }
 
+  void clearFields() {
+    taskNameController.clear();
+    taskTimeController.clear();
+    taskDescriptionController.clear();
+    taskCatController.clear();
+    realDueDate = null;
+  }
 
-
-
+  @override
+  void onClose() {
+    taskNameController.dispose();
+    taskTimeController.dispose();
+    taskDescriptionController.dispose();
+    taskCatController.dispose();
+    super.onClose();
+  }
 }

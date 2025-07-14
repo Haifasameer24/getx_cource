@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:getx_course/screens/splash_screen.dart';
+import 'package:getx_course/services/notification_services.dart';
 import 'controller/them_controller.dart';
 import 'firebase_options.dart';
 void main() async {
@@ -11,7 +12,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await GetStorage.init();
-  Get.put(ThemeController()); // <-- inject the controller
+  Get.put(ThemeController());
+  await NotificationService.init();
   runApp(const MyApp());
 }
 
@@ -25,8 +27,8 @@ class MyApp extends StatelessWidget {
     return Obx(() => GetMaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
+      theme: ThemeData.light(useMaterial3: true),
+      darkTheme: ThemeData.dark(useMaterial3: true),
       themeMode: themeController.isDarkMode.value
           ? ThemeMode.dark
           : ThemeMode.light,
