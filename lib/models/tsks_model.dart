@@ -13,6 +13,7 @@ class TaskModel {
   DateTime createdAt;
   DateTime dueDate;
   TaskStatus status;
+  bool haveNotify;
 
   TaskModel({
     required this.id,
@@ -23,6 +24,7 @@ class TaskModel {
     required this.dueDate,
     required this.status,
     required this.cat,
+    required this.haveNotify
 
   });
 
@@ -35,6 +37,7 @@ class TaskModel {
     'dueDate': dueDate.toIso8601String(),
     'status': status.name,
     'cat': cat,
+    'haveNotify' : haveNotify
   };
 
   factory TaskModel.fromJson(Map<String, dynamic> json) => TaskModel(
@@ -45,7 +48,8 @@ class TaskModel {
     createdAt: DateTime.parse(json['createdAt']),
     dueDate: DateTime.parse(json['dueDate']),
     status: TaskStatus.values.firstWhere((e) => e.name == json['status']),
-    cat: json['cat']
+    cat: json['cat'],
+      haveNotify: json['haveNotify']
   );
 
 }

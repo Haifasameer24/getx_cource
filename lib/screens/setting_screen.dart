@@ -2,54 +2,85 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/home_controller.dart';
 import '../controller/login_controller.dart';
+import '../controller/task_controller.dart';
 import '../controller/them_controller.dart';
 
 class SettingsPage extends StatelessWidget {
-  final RxBool isNotificationOn = true.obs;
-  final HomeController controller = Get.put(HomeController());
-  final controllerLogout = Get.put(LoginController());
-  final ThemeController themeController = Get.find();
+  final HomeController homeController = Get.put(HomeController());
+  final LoginController loginController = Get.put(LoginController());
+  final ThemeController themeController = Get.find<ThemeController>();
+
+  SettingsPage({Key? key}) : super(key: key);
 
   void _showEditDialog(BuildContext context) {
-    controller.nameController.text = controller.userName.value;
+    homeController.nameController.text = homeController.userName.value;
 
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text("Edit Profile"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundImage: AssetImage('assets/images/profail.jpeg'),
-              ),
-              SizedBox(height: 12),
-              TextField(
-                controller: controller.nameController,
-                decoration: InputDecoration(
-                  labelText: 'Your Name',
-                  border: OutlineInputBorder(),
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Edit Profile"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircleAvatar(
+              radius: 40,
+              backgroundImage: AssetImage('assets/images/profail.jpeg'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: homeController.nameController,
+              decoration: InputDecoration(
+                hintText: 'Category Description',
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context), child: Text("Cancel")),
-            ElevatedButton(
-                onPressed: () async {
-                  await controller
-                      .updateUserName(controller.nameController.text);
-                  Navigator.pop(context);
-                },
-                child: Text("Save")),
+            ),
           ],
-        );
-      },
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () async {
+              await homeController.updateUserName(homeController.nameController.text);
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingCard(BuildContext context, List<Widget> children) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 4,
+      color: Theme.of(context).cardColor,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(children: children),
+      ),
+    );
+  }
+
+  Widget _buildTile(BuildContext context, IconData icon, String title, VoidCallback onTap, bool isDark) {
+    return ListTile(
+      leading: Icon(icon,  color: Theme.of(context).colorScheme.primary),
+      title: Text(title, style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
+      trailing: Icon(Icons.arrow_forward_ios, size: 18, color: Theme.of(context).colorScheme.primary),
+      onTap: onTap,
     );
   }
 
@@ -58,27 +89,15 @@ class SettingsPage extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final taskcontroller = Get.put(TaskController());
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Settings',
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87),
-        ),
-        centerTitle: true,
-        backgroundColor: theme.scaffoldBackgroundColor,
-        elevation: 0,
-        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black87),
-      ),
       backgroundColor: theme.scaffoldBackgroundColor,
       body: ListView(
         padding: EdgeInsets.only(top: kToolbarHeight + 24, left: 16, right: 16),
         children: [
           // Profile Card
           Card(
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             elevation: 6,
             color: theme.cardColor,
             child: Padding(
@@ -88,7 +107,7 @@ class SettingsPage extends StatelessWidget {
                   Stack(
                     alignment: Alignment.bottomRight,
                     children: [
-                      CircleAvatar(
+                      const CircleAvatar(
                         radius: 50,
                         backgroundImage: AssetImage('assets/images/profail.jpeg'),
                       ),
@@ -98,30 +117,24 @@ class SettingsPage extends StatelessWidget {
                         child: GestureDetector(
                           onTap: () => _showEditDialog(context),
                           child: Container(
-                            padding: EdgeInsets.all(6),
+                            padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.blue,
+                              color: Theme.of(context).colorScheme.primary,
                               shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 2))
+                              boxShadow: const [
+                                BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
                               ],
                             ),
-                            child: Icon(Icons.edit, size: 18, color: Colors.white),
+                            child: const Icon(Icons.edit, size: 18, color: Colors.white),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Obx(() => Text(
-                    controller.userName.value,
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : Colors.black87),
+                    homeController.userName.value,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87),
                   )),
                   Text(
                     'haifa@example.com',
@@ -132,75 +145,41 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
 
           // Settings Section
-          _buildSettingCard(
-            theme,
-            [
-              Obx(() => SwitchListTile(
-                title: Text('Notifications',
-                    style: TextStyle(
-                        color: isDark ? Colors.white : Colors.black87)),
-                secondary: Icon(Icons.notifications_active,
-                    color: Colors.blue),
-                value: isNotificationOn.value,
-                onChanged: (val) => isNotificationOn.value = val,
-              )),
-              SizedBox(
-                height: 10,
-              ),
-              Obx(() => SwitchListTile(
-                title: Text('Dark Mode',
-                    style: TextStyle(
-                        color: isDark ? Colors.white : Colors.black87)),
-                secondary: Icon(Icons.dark_mode, color: Colors.blue),
-                value: themeController.isDarkMode.value,
-                onChanged: (val) => themeController.toggleTheme(val),
-              )),
-            ],
-          ),
+          _buildSettingCard(context, [
+            Obx(() => SwitchListTile(
+              title: Text('Notifications', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
+              secondary: Icon(Icons.notifications_active, color: theme.colorScheme.primary),
+              value: taskcontroller.isNotificationOn.value,
+              onChanged: (val) => taskcontroller.isNotificationOn.value = val,
+            )),
+            const SizedBox(height: 10),
+            Obx(() => SwitchListTile(
+              title: Text('Dark Mode', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
+              secondary: Icon(Icons.dark_mode, color: theme.colorScheme.primary),
+              value: themeController.isDarkMode.value,
+              onChanged: (val) => themeController.toggleTheme(val),
+            )),
+          ]),
 
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
           // Info Section
-          _buildSettingCard(
-            theme,
-            [
-              _buildTile(Icons.lock, 'Privacy', () {}, isDark),
-              _buildTile(Icons.help_outline, 'Help & Support', () {}, isDark),
-              _buildTile(Icons.call, 'Contact us', () {}, isDark),
-              _buildTile(Icons.info_outline, 'About App', () {}, isDark),
-              _buildTile(Icons.logout, 'Loge out', () {
-                controllerLogout.logout();
-              }, isDark),
-            ],
-          ),
+          _buildSettingCard(context, [
+            _buildTile(context, Icons.lock, 'Privacy', () {}, isDark),
+            _buildTile(context, Icons.help_outline, 'Help & Support', () {}, isDark),
+            _buildTile(context, Icons.call, 'Contact us', () {}, isDark),
+            _buildTile(context, Icons.info_outline, 'About App', () {}, isDark),
+            _buildTile(context, Icons.logout, 'Log out', () {
+              loginController.logout();
+            }, isDark),
+          ]),
 
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
         ],
       ),
-    );
-  }
-
-  Widget _buildSettingCard(ThemeData theme, List<Widget> children) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      elevation: 4,
-      color: theme.cardColor,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(children: children),
-      ),
-    );
-  }
-
-  Widget _buildTile(IconData icon, String title, VoidCallback onTap, bool isDark) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blue),
-      title: Text(title, style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
-      trailing: Icon(Icons.arrow_forward_ios, size: 18, color: Colors.blue),
-      onTap: onTap,
     );
   }
 }

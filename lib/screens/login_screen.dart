@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:getx_course/controller/login_controller.dart';
@@ -17,108 +18,130 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      body: Container(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 40),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Lottie.asset("assets/lottie/splash.json", width: 150),
-                SizedBox(height: 10),
-                Text(
-                  "Welcome Back!",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Lottie.asset(
+                "assets/lottie/splash.json",
+                width: 200,
+                // لو تحب ممكن تغير ألوان الأنيميشن حسب الوضع لكن غالباً مش ضروري
+              ),
+              SizedBox(height: 10),
+              Text(
+                "Welcome Back!",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
-                SizedBox(height: 10),
-                Container(
-                  padding: EdgeInsets.all(20),
-                  margin: EdgeInsets.only(top: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
-                      )
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: loginController.emailController,
-                        decoration: InputDecoration(
-                          prefixIcon: Icon(Icons.email),
-                          hintText: "Enter your email",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
+              ),
+              SizedBox(height: 10),
+              Container(
+                padding: EdgeInsets.all(20),
+                margin: EdgeInsets.only(top: 20),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[900] : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark ? Colors.black54 : Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    )
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: loginController.emailController,
+                      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.email, color: theme.iconTheme.color),
+                        hintText: "Enter your email",
+                        hintStyle: TextStyle(color: theme.hintColor),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
                         ),
+                        filled: true,
+                        fillColor: isDark ? Colors.grey[800] : Colors.grey.shade100,
                       ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: loginController.passwordController,
-                        obscureText: _obsecurePassword,
-                        decoration: InputDecoration(
-                          prefixIcon: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _obsecurePassword = !_obsecurePassword;
-                              });
+                    ),
+                    SizedBox(height: 16),
+                    TextFormField(
+                      controller: loginController.passwordController,
+                      obscureText: _obsecurePassword,
+                      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                      decoration: InputDecoration(
+                        prefixIcon: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _obsecurePassword = !_obsecurePassword;
+                            });
+                          },
+                          child: Icon(
+                            _obsecurePassword ? Icons.visibility_off : Icons.visibility,
+                            color: theme.iconTheme.color,
+                          ),
+                        ),
+                        hintText: "Enter your password",
+                        hintStyle: TextStyle(color: theme.hintColor),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: isDark ? Colors.grey[800] : Colors.grey.shade100,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Obx(() {
+                          if (loginController.isLoading.value) {
+                            return const Center(child: CupertinoActivityIndicator(),);
+                          }
+                          return ElevatedButton(
+                            onPressed: () {
+                              loginController.login();
                             },
-                            child: Icon(_obsecurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility),
-                          ),
-                          hintText: "Enter your password",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
-                        ),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 48),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
+                            child: Text("Login"),
+                          );
+
+                        }),
                       ),
-                      SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          loginController.login();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue.shade700,
-                          padding: EdgeInsets.symmetric(
-                              vertical: 16, horizontal: 60),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text(
-                          "Login",
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
+
+                    SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () {
+                        Get.to(() => SignupScreen());
+                      },
+                      child: Text(
+                        "Don't have an account? Sign Up",
+                        style: TextStyle(color: theme.colorScheme.primary),
                       ),
-                      SizedBox(height: 16),
-                      TextButton(
-                        onPressed: () {
-                          Get.to(SignupScreen());
-                        },
-                        child: Text(
-                          "Don't have an account? Sign Up",
-                          style: TextStyle(color: Colors.blue.shade700),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

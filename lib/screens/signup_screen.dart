@@ -20,10 +20,14 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(SignUpController());
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
@@ -34,18 +38,25 @@ class _SignupScreenState extends State<SignupScreen> {
             children: [
               Lottie.asset("assets/lottie/splash.json", width: screenWidth * 0.4),
               SizedBox(height: screenHeight * 0.02),
+
               _buildTextField(
                 controller: controller.nameController,
                 icon: Icons.person,
                 hint: "Enter your name",
+                theme: theme,
+                isDark: isDark,
               ),
               SizedBox(height: screenHeight * 0.02),
+
               _buildTextField(
                 controller: controller.emailController,
                 icon: Icons.email,
                 hint: "Enter E-mail",
+                theme: theme,
+                isDark: isDark,
               ),
               SizedBox(height: screenHeight * 0.02),
+
               _buildTextField(
                 controller: controller.passwordController,
                 icon: _obsecurePassword ? Icons.visibility_off : Icons.visibility,
@@ -54,8 +65,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 toggleObscure: () {
                   setState(() => _obsecurePassword = !_obsecurePassword);
                 },
+                theme: theme,
+                isDark: isDark,
               ),
               SizedBox(height: screenHeight * 0.02),
+
               _buildTextField(
                 controller: controller.passwordConfirmController,
                 icon: _obsecureConfirmPassword ? Icons.visibility_off : Icons.visibility,
@@ -64,13 +78,16 @@ class _SignupScreenState extends State<SignupScreen> {
                 toggleObscure: () {
                   setState(() => _obsecureConfirmPassword = !_obsecureConfirmPassword);
                 },
+                theme: theme,
+                isDark: isDark,
               ),
               SizedBox(height: screenHeight * 0.03),
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade700,
+                    backgroundColor: theme.colorScheme.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -86,11 +103,12 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.04),
+
               TextButton(
                 onPressed: () => Get.back(),
                 child: Text(
                   "You have an account?",
-                  style: TextStyle(color: Colors.blue.shade700),
+                  style: TextStyle(color: theme.colorScheme.primary),
                 ),
               ),
             ],
@@ -106,23 +124,28 @@ class _SignupScreenState extends State<SignupScreen> {
     required String hint,
     bool obscure = false,
     VoidCallback? toggleObscure,
+    required ThemeData theme,
+    required bool isDark,
   }) {
     return TextField(
       controller: controller,
       obscureText: obscure,
+      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
       decoration: InputDecoration(
         prefixIcon: toggleObscure == null
-            ? Icon(icon)
+            ? Icon(icon, color: theme.iconTheme.color)
             : GestureDetector(
           onTap: toggleObscure,
-          child: Icon(icon),
+          child: Icon(icon, color: theme.iconTheme.color),
         ),
         hintText: hint,
+        hintStyle: TextStyle(color: theme.hintColor),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: isDark ? Colors.grey[800] : Colors.grey.shade100,
       ),
     );
   }

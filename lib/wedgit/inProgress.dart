@@ -1,164 +1,192 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:getx_course/controller/task_controller.dart';
+import '../controller/addCatgory_controller.dart';
+import '../controller/task_controller.dart';
 import '../models/tsks_model.dart';
 
 class InProgress extends StatelessWidget {
   final box = GetStorage();
   final TaskController taskController = Get.find<TaskController>();
-  final List<String> statusOptions= ["done"];
+  final categoryController1 = Get.put(CategoryController());
+  final List<String> statusOptions = ["done"];
+
   @override
   Widget build(BuildContext context) {
+   
     final theme = Theme.of(context);
+
     return Container(
       padding: EdgeInsets.all(16.0),
       child: Obx(() {
         final seenIds = <String>{};
-        final tasks = taskController.tasks
+        final tasks = taskController.filteredTasks
             .where((task) => task.status == TaskStatus.inProgress)
-            .where((task) => seenIds.add(task.id)) // Remove duplicates
+            .where((task) => seenIds.add(task.id))
             .toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'In Progress',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: "RobotoSlab",
-                  ),
-                ),
-              ],
+            Text(
+              'In Progress Tasks',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontFamily: "RobotoSlab",
+              ),
             ),
             SizedBox(height: 20),
             if (tasks.isEmpty)
-              Center(child: Text("لا توجد مهام حالياً"))
+              Center(child: Text("لا توجد مهام حالياً", style: theme.textTheme.bodyMedium))
             else
-              ...tasks.map((task) =>  _buildTaskCard(task, context, statusOptions, taskController)).toList(),
+              ...tasks.map((task) => _buildTaskCard(task, context, statusOptions, taskController,categoryController1,)).toList(),
           ],
         );
       }),
     );
   }
-
 }
 
-//// widegt for list
 Widget _buildTaskCard(
     TaskModel task,
     BuildContext context,
     List<String> statusOptions,
     TaskController taskController,
+    CategoryController categoryController,
     ) {
-  String currentStatusText = task.status.name;
+  final theme = Theme.of(context);
+  final cardColor = theme.cardColor;
+  final textColor = theme.textTheme.bodyMedium?.color ?? Colors.black87;
+  final subtitleColor = theme.hintColor;
   return Slidable(
-      key: ValueKey(task.id),
-      endActionPane: ActionPane(
-          motion: ScrollMotion(),
-          dismissible: DismissiblePane(
-              onDismissed: () async{
-                final userId=GetStorage().read("id");
-                await FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(userId)
-                    .collection('tasks')
-                    .doc(task.id)
-                    .delete();
-                taskController.tasks.remove(task);
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("تم حذف المهمة '${task.name}'")),
-                );
-              },
-          ),
-          children: [
-            SlidableAction(
-                onPressed: (_){},
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              icon: Icons.delete_outline,
-              label: "Delete",
-            ),
-          ]),
+    key: ValueKey(task.id),
+    endActionPane: ActionPane(
+      motion: ScrollMotion(),
+      dismissible: DismissiblePane(
+        onDismissed: () async {
+          final userId = GetStorage().read("id");
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .collection('tasks')
+              .doc(task.id)
+              .delete();
+          taskController.tasks.remove(task);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Task Deleted '${task.name}'")),
+          );
+        },
+      ),
+      children: [
+        SlidableAction(
+          onPressed: (_) {},
+          backgroundColor: Colors.red,
+          foregroundColor: Colors.white,
+          icon: Icons.delete_outline,
+          label: "Delete",
+        ),
+      ],
+    ),
     child: Container(
       margin: EdgeInsets.only(bottom: 16),
-      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color:
-             Colors.orangeAccent.shade700
-             ,
-        borderRadius: BorderRadius.circular(10),
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4)),
+          BoxShadow(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white10
+                : Colors.black12,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            task.name,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          // Side icon box
+          Container(
+            width: 50,
+            height: 120,
+            decoration: BoxDecoration(
+              color: Colors.orange,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
+              ),
+            ),
+            child: Icon(Icons.assignment, color: Colors.white),
           ),
-          SizedBox(height: 4),
-          Text(
-            task.description,
-            style: TextStyle(fontSize: 13, color: Colors.white),
-          ),
-          SizedBox(height: 4),
-          Text(
-            "Category : ${task.cat}",
-            style: TextStyle(fontSize: 13, color: Colors.white),
-          ),
-          SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
+
+          // Text content
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.access_time, size: 18, color: Colors.blue),
-                  SizedBox(width: 6),
                   Text(
-                    "${task.dueDate.year}-${task.dueDate.month.toString().padLeft(2, '0')}-${task.dueDate.day.toString().padLeft(2, '0')} "
-                        "${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}",
-                    style: TextStyle(color: Colors.white),
+                    task.name,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textColor),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    task.description,
+                    style: TextStyle(fontSize: 13, color: subtitleColor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "Category: ${task.cat}",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: categoryController.getColorByCategoryName(task.cat) ?? Colors.grey,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "${task.dueDate.day} ${_getMonthName(task.dueDate.month)} ${task.dueDate.year} "
+                        "${_formatHour(task.dueDate.hour)}:${task.dueDate.minute.toString().padLeft(2, '0')} ${_getAmPm(task.dueDate.hour)}",
+                    style: TextStyle(fontSize: 13, color: subtitleColor),
                   ),
                 ],
               ),
-              DropdownMenu<String>(
-                width: 180,
-                textStyle: TextStyle(color: Colors.black),
-                hintText: "Change Status",
-                initialSelection: null,
-                dropdownMenuEntries: [
-                  ...statusOptions.map((e) => DropdownMenuEntry(value: e, label: e))
-                ],
-                onSelected: (String? selected) {
-                  if (selected != null) {
-                    TaskStatus newStatus = TaskStatus.values.firstWhere((e) => e.name == selected);
-                    task.status = newStatus;
-                    taskController.tasks.refresh();
-                    final userId = GetStorage().read("id");
-                    FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(userId)
-                        .collection('tasks')
-                        .doc(task.id)
-                        .update({'status': newStatus.name});
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('تم تغيير الحالة إلى: $selected')),
-                    );
-                  }
-                },
-              ),
-            ],
+            ),
+          ),
+
+          // Menu
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, color: subtitleColor),
+              onSelected: (String selected) async {
+                if (selected == "Change Status") {
+                  final userId = GetStorage().read("id");
+                  TaskStatus newStatus = TaskStatus.done;
+                  task.status = newStatus;
+                  taskController.tasks.refresh();
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(userId)
+                      .collection('tasks')
+                      .doc(task.id)
+                      .update({'status': newStatus.name});
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('تم تغيير الحالة إلى: ${newStatus.name}')),
+                  );
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem(
+                  value: "Change Status",
+                  child: Text("Mark as Done"),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -166,3 +194,20 @@ Widget _buildTaskCard(
   );
 }
 
+// Helper functions
+String _getMonthName(int month) {
+  const monthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+  return monthNames[month - 1];
+}
+
+String _getAmPm(int hour) {
+  return hour >= 12 ? "PM" : "AM";
+}
+
+String _formatHour(int hour) {
+  final formatted = hour % 12 == 0 ? 12 : hour % 12;
+  return formatted.toString().padLeft(2, '0');
+}

@@ -3,44 +3,51 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
+import 'package:getx_course/controller/task_controller.dart';
+import 'package:getx_course/models/tsks_model.dart';
 
-import '../controller/task_controller.dart';
-import '../models/tsks_model.dart';
-
-class CategoryDetailPage extends StatelessWidget {
-  final String catName;
-  const CategoryDetailPage({required this.catName});
+class AllTasksPage extends StatelessWidget {
+  const AllTasksPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final TaskController taskController = Get.find<TaskController>();
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('$catName'),
-      ),
-      body: Center(
-        child: Container(
-          padding: EdgeInsets.all(16.0),
-          child: Obx(() {
-            final seenIds = <String>{};
-            final tasks = taskController.tasks
-                .where((task) => task.cat == catName)
-                .where((task) => seenIds.add(task.id))
-                .toList();
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Obx(() {
+          final seenIds = <String>{};
+          final tasks = taskController.tasks
+              .where((task) => seenIds.add(task.id))
+              .toList();
 
-            return Column(
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 20),
-                if (tasks.isEmpty)
-                  Center(child: Text("لا توجد مهام حالياً"))
-                else
-                  ...tasks.map((task) => _buildTaskCard(task, context)).toList(),
+                Text(
+                  "All Tasks",
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: tasks.isEmpty
+                      ? const Center(child: Text("لا توجد مهام حالياً"))
+                      : ListView.builder(
+                    itemCount: tasks.length,
+                    itemBuilder: (context, index) =>
+                        _buildTaskCard(tasks[index], context),
+                  ),
+                ),
               ],
-            );
-          }),
-        ),
+            ),
+          );
+        }),
       ),
     );
   }
@@ -55,7 +62,7 @@ class CategoryDetailPage extends StatelessWidget {
     return Slidable(
       key: ValueKey('${task.id}_${task.createdAt.toIso8601String()}'),
       endActionPane: ActionPane(
-        motion: ScrollMotion(),
+        motion: const ScrollMotion(),
         dismissible: DismissiblePane(
           onDismissed: () async {
             final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -98,7 +105,7 @@ class CategoryDetailPage extends StatelessWidget {
                   ? Colors.white10
                   : Colors.black12,
               blurRadius: 10,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -110,14 +117,15 @@ class CategoryDetailPage extends StatelessWidget {
               height: 120,
               decoration: BoxDecoration(
                 color: _getStatusColor(task.status),
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   bottomLeft: Radius.circular(16),
                 ),
               ),
-              child: Icon(Icons.assignment, color: Colors.white),
+              child: Icon(
+               Icons.assignment, color: Colors.white,
+              ),
             ),
-
 
             // النصوص
             Expanded(
@@ -169,6 +177,7 @@ class CategoryDetailPage extends StatelessWidget {
                 ),
               ),
             ),
+
             // حالة المهمة
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
@@ -226,6 +235,18 @@ class CategoryDetailPage extends StatelessWidget {
         return Colors.orange;
       case TaskStatus.done:
         return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+  Color _getTextColor(TaskStatus status){
+    switch (status){
+      case TaskStatus.upcoming:
+        return Color(0xFF4B3FAF).withOpacity(0.3);
+      case TaskStatus.inProgress:
+        return Colors.orange.withOpacity(0.3);
+      case TaskStatus.done:
+        return Colors.green.withOpacity(0.3);
       default:
         return Colors.grey;
     }

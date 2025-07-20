@@ -3,48 +3,50 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:get_storage/get_storage.dart';
-import '../controller/addCatgory_controller.dart';
-import '../controller/task_controller.dart';
-import '../models/tsks_model.dart';
+import 'package:getx_course/controller/task_controller.dart';
+import 'package:getx_course/models/tsks_model.dart';
 
-class UpComingTasks extends StatelessWidget {
+import '../controller/addCatgory_controller.dart';
+
+class NotificationPage extends StatelessWidget{
   final TaskController taskController = Get.find<TaskController>();
   final categoryController = Get.put(CategoryController());
-
-  final List<String> statusOption = ["inProgress"];
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      padding: EdgeInsets.all(16.0),
-      child: Obx(() {
-        final seenIds = <String>{};
-        final tasks = taskController.filteredTasks
-            .where((task) => task.status == TaskStatus.upcoming)
-            .where((task) => seenIds.add(task.id)) // Remove duplicates
-            .toList();
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Container(
+        padding: EdgeInsets.all(16.0),
+        child: Obx(() {
+          final seenIds = <String>{};
+          final tasks = taskController.filteredTasks
+              .where((task) => task.haveNotify == true)
+              .where((task) => seenIds.add(task.id)) // Remove duplicates
+              .toList();
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Upcoming Tasks',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                fontFamily: "RobotoSlab",
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Notifications',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: "RobotoSlab",
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            if (tasks.isEmpty)
-              Center(child: Text('There is no task yet', style: theme.textTheme.bodyMedium))
-            else
-              ...tasks.map((task) => _buildTaskCard(task, context)).toList(),
-          ],
-        );
-      }),
+              SizedBox(height: 20),
+              if (tasks.isEmpty)
+                Center(child: Text('There is no task yet', style: theme.textTheme.bodyMedium))
+              else
+                ...tasks.map((task) => _buildTaskCard(task, context)).toList(),
+            ],
+          );
+        }),
+      ),
     );
   }
 
@@ -84,7 +86,7 @@ class UpComingTasks extends StatelessWidget {
                   .delete();
               taskController.tasks.remove(task);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("'Task Deleted'${task.name}'")),
+                SnackBar(content: Text("'Notification Deleted'${task.name}'")),
               );
             },
             backgroundColor: Colors.red,
@@ -112,17 +114,18 @@ class UpComingTasks extends StatelessWidget {
         child: Row(
           children: [
             // Side colored box
-            Container(
-              width: 50,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Color(0xFF4B3FAF),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  bottomLeft: Radius.circular(16),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Color(0xFF4B3FAF),
+                  borderRadius: BorderRadius.all(Radius.circular(50)),
+
                 ),
+                child: Icon(Icons.assignment, color: Colors.white),
               ),
-              child: Icon(Icons.assignment, color: Colors.white),
             ),
 
             // Text content
@@ -138,19 +141,10 @@ class UpComingTasks extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      task.description,
+                      '${task.description}, Category: ${task.cat}',
                       style: TextStyle(fontSize: 13, color: subtitleColor),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "Category: ${task.cat}",
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: categoryController.getColorByCategoryName(task.cat) ?? Colors.grey,
-                      ),
                     ),
                     SizedBox(height: 4),
                     Text(
@@ -163,34 +157,11 @@ class UpComingTasks extends StatelessWidget {
               ),
             ),
 
-            // Menu
+           // Notification
             Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: PopupMenuButton<String>(
-                icon: Icon(Icons.more_vert, color: subtitleColor),
-                onSelected: (String selected) async {
-                  if (selected == "Change Status") {
-                    final userId = GetStorage().read("id");
-                    TaskStatus newStatus = TaskStatus.inProgress;
-                    task.status = newStatus;
-                    taskController.tasks.refresh();
-
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(userId)
-                        .collection('tasks')
-                        .doc(task.id)
-                        .update({'status': newStatus.name});
-                  }
-                },
-                itemBuilder: (BuildContext context) => [
-                  PopupMenuItem(
-                    value: "Change Status",
-                    child: Text("Mark as In Progress"),
-                  ),
-                ],
+              child: Icon(Icons.notifications_on_outlined, color: subtitleColor,size: 20,),
               ),
-            ),
           ],
         ),
       ),

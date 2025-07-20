@@ -12,8 +12,10 @@ class LoginController extends GetxController {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final box = GetStorage();
+  final isLoading = false.obs;
 
   Future<void> login() async {
+    isLoading.value = true;
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
     try{
@@ -23,9 +25,12 @@ class LoginController extends GetxController {
       );
       await _setUserLoggedIn();
       Get.offAll(HomeScreen());
+
+
     }catch(e){
       Get.snackbar("Error", "Because ${e.toString()}");
     }
+    isLoading.value = false;
   }
 
   Future<void> logout() async {
@@ -53,6 +58,8 @@ class LoginController extends GetxController {
         await box.write("email", userData["email"]);
         await box.write("create_date", userData["createdAt"]);        }
         await box.write("is_logged_in", true);
+        box.write("seen_onboarding", true);
+
     }
   }
 }

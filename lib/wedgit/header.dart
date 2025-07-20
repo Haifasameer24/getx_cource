@@ -76,64 +76,70 @@ class _HeaderWidgetState extends State<HeaderWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final double fieldHeight = 48; // ارتفاع موحد
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      child: Row(
+      child: Obx(() => Row(
         children: [
           Expanded(
-            child: Obx(() => TextField(
-              onChanged: (value) {
-                if (searchFilter.value == SearchFilter.tasks) {
-                  taskController.searchText.value = value;
-                  categoryController.searchText.value = '';
-                } else {
-                  categoryController.searchText.value = value;
-                  taskController.searchText.value = '';
-                }
-              },
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search, color: Theme.of(context).iconTheme.color),
-                hintText: searchFilter.value == SearchFilter.tasks
-                    ? "Search Tasks"
-                    : "Search Categories",
-                filled: true,
-                fillColor: Theme.of(context).inputDecorationTheme.fillColor ??
-                    Theme.of(context).cardColor.withOpacity(0.1),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(
-                    color: Theme.of(context).dividerColor,
-                    width: 1,
+            child: SizedBox(
+              height: fieldHeight,
+              child: TextField(
+                onChanged: (value) {
+                  if (searchFilter.value == SearchFilter.tasks) {
+                    taskController.searchText.value = value;
+                    categoryController.searchText.value = '';
+                  } else {
+                    categoryController.searchText.value = value;
+                    taskController.searchText.value = '';
+                  }
+                },
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.search, color: Colors.black.withOpacity(0.6)),
+                  hintText: searchFilter.value == SearchFilter.tasks
+                      ? "Search Tasks"
+                      : "Search Categories",
+                  filled: true,
+                  fillColor: Colors.grey[300],
+                  contentPadding: EdgeInsets.symmetric(vertical: 14),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(
-                    color: Theme.of(context).dividerColor,
-                    width: 1,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
+                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.6)),
                 ),
-              ),
-              style: TextStyle(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-              ),
-            )),
-          ),
 
-          const SizedBox(width: 20),
-          IconButton(
-            icon: Icon(Icons.filter_alt_outlined, color: Theme.of(context).iconTheme.color),
-            onPressed: _showFilterBottomSheet,
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Container(
+            height: fieldHeight,
+            width: fieldHeight,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: _showFilterBottomSheet,
+              child: Icon(Icons.filter_alt_outlined, color: Colors.black.withOpacity(0.6)),
+            ),
           ),
         ],
-      ),
+      )),
     );
   }
 }

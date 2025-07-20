@@ -6,16 +6,23 @@ class ThemeController extends GetxController {
   final _storage = GetStorage();
   final _key = 'isDarkMode';
 
+
   RxBool isDarkMode = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    isDarkMode.value = _loadThemeFromStorage();
+    if(_storage.hasData(_key)){
+      isDarkMode.value=_storage.read(_key);
+    }else{
+      // If not found, get from system setting
+      final brightness = WidgetsBinding.instance.window.platformBrightness;
+      isDarkMode.value = brightness == Brightness.dark;
+      saveThemeToStorage(isDarkMode.value);
+    }
+    // Apply theme
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
   }
-
-  bool _loadThemeFromStorage() => _storage.read(_key) ?? false;
 
   void saveThemeToStorage(bool isDarkMode) => _storage.write(_key, isDarkMode);
 

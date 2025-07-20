@@ -12,11 +12,14 @@ class CategoryController extends GetxController {
 
   final categories = <Category>[].obs;
 
+  RxString searchText = ''.obs;
+
   @override
   void onInit() {
     super.onInit();
     fetchCategories();
   }
+
   void fetchCategories() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -44,10 +47,11 @@ class CategoryController extends GetxController {
     CatdescController.clear();
     selectedColor = null;
   }
+
   Future<void> addCategory(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      Get.snackbar("User not logged in", "يرجى تسجيل الدخول أولاً");
+      Get.snackbar("User not logged in", "login first....");
       return;
     }
 
@@ -55,12 +59,12 @@ class CategoryController extends GetxController {
     final desc = CatdescController.text.trim();
 
     if (name.isEmpty || desc.isEmpty) {
-      Get.snackbar("خطأ", "يرجى تعبئة كل الحقول");
+      Get.snackbar("خطأ", "pleace file all field");
       return;
     }
 
     if (selectedColor == null) {
-      Get.snackbar("خطأ", "يرجى اختيار لون");
+      Get.snackbar("خطأ", "choose color");
       return;
     }
 
@@ -79,13 +83,11 @@ class CategoryController extends GetxController {
 
       clear();
       Navigator.pop(context);
-      Get.snackbar("تمت الإضافة", "تمت إضافة الصنف بنجاح");
+      Get.snackbar("Added", "Added successful");
     } catch (e) {
       Get.snackbar("خطأ", e.toString());
     }
   }
-
-  RxString searchText = ''.obs;
 
   List<Category> get filteredCategories {
     if (searchText.value.trim().isEmpty) return categories;
@@ -93,8 +95,10 @@ class CategoryController extends GetxController {
       return cat.name.toLowerCase().contains(searchText.value.toLowerCase());
     }).toList();
   }
-
-
+  Color? getColorByCategoryName(String categoryName) {
+    final cat = categories.firstWhereOrNull((c) => c.name == categoryName);
+    return cat?.color;
+  }
   @override
   void onClose() {
     CatnameController.dispose();
