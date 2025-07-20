@@ -23,6 +23,10 @@ class _AddButtonState extends State<AddButton> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final taskcontroller = Get.put(TaskController());
+
     return Padding(
       padding: EdgeInsets.only(
         left: 16,
@@ -138,6 +142,12 @@ class _AddButtonState extends State<AddButton> {
               );
             }),
             SizedBox(height: 16),
+            Obx(() => SwitchListTile(
+              title: Text('Send Alert Notifications', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
+              secondary: Icon(Icons.notifications_active, color: theme.colorScheme.primary),
+              value: taskcontroller.haveNotify.value,
+              onChanged: (val) => taskcontroller.haveNotify.value = val,
+            )),
 
             ElevatedButton(
               onPressed: () async {

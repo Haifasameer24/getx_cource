@@ -106,19 +106,30 @@ class ListCatigroies extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       TextField(
-                        controller: addCatogory.CatnameController,
+                        controller: addCatogory.CatdescController,
                         decoration: InputDecoration(
-                          labelText: 'Category Name',
-                          border: OutlineInputBorder(),
+                          hintText: 'Category Name',
+                          contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                          filled: true,
+                          fillColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                       SizedBox(height: 12),
                       TextField(
                         controller: addCatogory.CatdescController,
-                        maxLines: 3,
                         decoration: InputDecoration(
-                          labelText: 'Category Description',
-                          border: OutlineInputBorder(),
+                          hintText: 'Category Description',
+                          contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                          filled: true,
+                          fillColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                       SizedBox(height: 12),
@@ -169,7 +180,16 @@ class ListCatigroies extends StatelessWidget {
                         onPressed: () async {
                           await addCatogory.addCategory(context);
                         },
-                        child: Text('Done'),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 48), // ياخذ كامل العرض وارتفاع 48
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                        child: const Text('Done'),
                       ),
                     ],
                   ),

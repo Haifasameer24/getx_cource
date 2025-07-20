@@ -5,16 +5,15 @@ import 'package:get_storage/get_storage.dart';
 
 import '../controller/addCatgory_controller.dart';
 import '../controller/home_controller.dart';
-import '../controller/login_controller.dart';
 import '../controller/task_controller.dart';
-import '../models/tsks_model.dart';
 import '../screens/setting_screen.dart';
 import '../wedgit/DoneTask.dart';
-import '../wedgit/add_button.dart';
+import '../wedgit/add_wedgit.dart';
 import '../wedgit/inProgress.dart';
 import '../wedgit/upcoming.dart';
-import '../wedgit/header.dart';
 import '../wedgit/categoties.dart';
+import 'all_task.dart';
+import 'notification.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -24,24 +23,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final taskController = Get.put(TaskController());
   final categoryController = Get.put(CategoryController());
+  final HomeController controller = Get.put(HomeController());
   final GetStorage box = GetStorage();
 
   int _selectedIndex = 0;
-  String filterMode = "Tasks"; // default
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  String filterMode = "Tasks";
 
   List<Widget> getPages() {
     return [
+      // index 0 → Home
       SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -49,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Hello, John!",
+                      "Hello, ${controller.userName.value}!",
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 4),
@@ -71,8 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             SizedBox(height: 16),
-
-            // Search + Filter
             Row(
               children: [
                 Expanded(
@@ -80,13 +73,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     onChanged: (value) {
                       if (filterMode == "Tasks") {
                         taskController.searchText.value = value;
-                      } else if (filterMode == "Categories") {
+                      } else {
                         categoryController.searchText.value = value;
                       }
                     },
                     decoration: InputDecoration(
                       hintText: filterMode == "Tasks" ? 'Search tasks...' : 'Search categories...',
-                      prefixIcon: Icon(Icons.search, color: Theme.of(context).iconTheme.color),
+                      prefixIcon: Icon(Icons.search),
                       contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                       filled: true,
                       fillColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
@@ -100,62 +93,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(width: 8),
                 IconButton(
                   icon: Icon(Icons.filter_list, color: Theme.of(context).colorScheme.primary),
-                  onPressed: () {
-                    _showFilterDialog(context);
-                  },
+                  onPressed: () => _showFilterDialog(context),
                 ),
               ],
             ),
             SizedBox(height: 20),
-
-            // Categories section
             ListCatigroies(),
             SizedBox(height: 20),
-
-            // Tasks sections
             UpComingTasks(),
             InProgress(),
             DoneTask(),
           ],
         ),
       ),
+
+      AllTasksPage(),
+
+      // index 1 → Notifications
+      NotificationPage(),
+
+
+
+      // index 2 → Settings
       SettingsPage(),
     ];
-  }
-
-  void _showFilterDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          title: Text('Filter', style: Theme.of(context).textTheme.titleMedium),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: Text('Tasks'),
-                onTap: () {
-                  setState(() {
-                    filterMode = "Tasks";
-                  });
-                  Get.back();
-                },
-              ),
-              ListTile(
-                title: Text('Categories'),
-                onTap: () {
-                  setState(() {
-                    filterMode = "Categories";
-                  });
-                  Get.back();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -165,9 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       extendBody: true,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: getPages()[_selectedIndex],
-      ),
+      body: SafeArea(child: getPages()[_selectedIndex]),
       bottomNavigationBar: Container(
         height: 56,
         decoration: BoxDecoration(
@@ -183,40 +142,37 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildTabItem(context, icon: Icons.home_rounded, index: 0),
-            _buildAddButton(context, primaryColor),
-            _buildTabItem(context, icon: Icons.settings_rounded, index: 1),
+            _buildTabItem(icon: Icons.home_rounded, index: 0),
+            _buildTabItem(icon: Icons.list_alt_rounded, index: 1), // ← يستدعي صفحة AllTasks
+            _buildAddButton(primaryColor),
+            _buildTabItem(icon: Icons.notifications_none, index: 2),
+            _buildTabItem(icon: Icons.settings_rounded, index: 3),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAddButton(BuildContext context, Color primaryColor) {
+  Widget _buildAddButton(Color primaryColor) {
     return GestureDetector(
       onTap: () {
         showModalBottomSheet(
           context: context,
           isScrollControlled: true,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
           builder: (context) => AddButton(),
         );
       },
       child: Container(
         padding: EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: primaryColor,
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(color: primaryColor, shape: BoxShape.circle),
         child: Icon(Icons.add, color: Colors.white, size: 24),
       ),
     );
   }
 
-  Widget _buildTabItem(BuildContext context, {required IconData icon, required int index}) {
+  Widget _buildTabItem({required IconData icon, required int index}) {
     final isSelected = _selectedIndex == index;
     final primaryColor = Theme.of(context).colorScheme.primary;
 
@@ -230,6 +186,52 @@ class _HomeScreenState extends State<HomeScreen> {
         icon,
         size: 24,
         color: isSelected ? primaryColor : Theme.of(context).iconTheme.color?.withOpacity(0.6),
+      ),
+    );
+  }
+
+  // ← هذا فقط يفتح صفحة خارجية عند الضغط
+  Widget _buildExternalTab({required IconData icon, required Widget target}) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    return GestureDetector(
+      onTap: () => Get.to(() => target),
+      child: Icon(
+        icon,
+        size: 24,
+        color: Theme.of(context).iconTheme.color?.withOpacity(0.6),
+      ),
+    );
+  }
+
+  void _showFilterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text('Filter', style: Theme.of(context).textTheme.titleMedium),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text('Tasks'),
+              onTap: () {
+                setState(() {
+                  filterMode = "Tasks";
+                });
+                Get.back();
+              },
+            ),
+            ListTile(
+              title: Text('Categories'),
+              onTap: () {
+                setState(() {
+                  filterMode = "Categories";
+                });
+                Get.back();
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

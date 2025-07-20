@@ -3,16 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import '../controller/addCatgory_controller.dart';
 import '../controller/task_controller.dart';
 import '../models/tsks_model.dart';
 
 class InProgress extends StatelessWidget {
   final box = GetStorage();
   final TaskController taskController = Get.find<TaskController>();
+  final categoryController1 = Get.put(CategoryController());
   final List<String> statusOptions = ["done"];
 
   @override
   Widget build(BuildContext context) {
+   
     final theme = Theme.of(context);
 
     return Container(
@@ -38,7 +41,7 @@ class InProgress extends StatelessWidget {
             if (tasks.isEmpty)
               Center(child: Text("لا توجد مهام حالياً", style: theme.textTheme.bodyMedium))
             else
-              ...tasks.map((task) => _buildTaskCard(task, context, statusOptions, taskController)).toList(),
+              ...tasks.map((task) => _buildTaskCard(task, context, statusOptions, taskController,categoryController1,)).toList(),
           ],
         );
       }),
@@ -51,12 +54,12 @@ Widget _buildTaskCard(
     BuildContext context,
     List<String> statusOptions,
     TaskController taskController,
+    CategoryController categoryController,
     ) {
   final theme = Theme.of(context);
   final cardColor = theme.cardColor;
   final textColor = theme.textTheme.bodyMedium?.color ?? Colors.black87;
   final subtitleColor = theme.hintColor;
-
   return Slidable(
     key: ValueKey(task.id),
     endActionPane: ActionPane(
@@ -72,7 +75,7 @@ Widget _buildTaskCard(
               .delete();
           taskController.tasks.remove(task);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("تم حذف المهمة '${task.name}'")),
+            SnackBar(content: Text("Task Deleted '${task.name}'")),
           );
         },
       ),
@@ -138,7 +141,11 @@ Widget _buildTaskCard(
                   SizedBox(height: 4),
                   Text(
                     "Category: ${task.cat}",
-                    style: TextStyle(fontSize: 13, color: subtitleColor),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: categoryController.getColorByCategoryName(task.cat) ?? Colors.grey,
+                    ),
                   ),
                   SizedBox(height: 4),
                   Text(

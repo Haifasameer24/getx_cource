@@ -26,6 +26,12 @@ class TaskController extends GetxController {
   RxList<TaskModel> tasks = <TaskModel>[].obs;
   RxString searchText = ''.obs;
 
+  final RxBool isNotificationOn = true.obs;
+  final RxBool isLoading=true.obs;
+  final RxBool haveNotify = true.obs;
+
+
+
   @override
   void onInit() {
     super.onInit();
@@ -38,6 +44,7 @@ class TaskController extends GetxController {
       Get.snackbar("Error", "User not logged in");
       return;
     }
+    isLoading.value=true;
 
     FirebaseFirestore.instance
         .collection("users")
@@ -49,6 +56,7 @@ class TaskController extends GetxController {
       tasks.value = snapshot.docs
           .map((doc) => TaskModel.fromJson(doc.data()))
           .toList();
+      isLoading.value=false;
     });
   }
 
@@ -83,15 +91,18 @@ class TaskController extends GetxController {
       return;
     }
     await addTask(dueDate: taskDate!);
-    await NotificationService.scheduleNotification(
-      title: "$taskTitle",
-      body: "$taskDesc",
-      year: year!,
-      month: month!,
-      day: day!,
-      hour: hour!,
-      minute: minute!,
-    );
+
+    if(haveNotify.value == true) {
+      await NotificationService.scheduleNotification(
+        title: "$taskTitle",
+        body: "$taskDesc",
+        year: year!,
+        month: month!,
+        day: day!,
+        hour: hour!,
+        minute: minute!,
+      );
+    }
   }
   Future<void> addTask({required DateTime dueDate}) async {
     final user = box.read("id");
@@ -109,6 +120,7 @@ class TaskController extends GetxController {
       dueDate: dueDate,
       status: TaskStatus.upcoming,
       cat: taskCatController.text.trim(),
+      haveNotify: haveNotify.value
     );
 
     try {
