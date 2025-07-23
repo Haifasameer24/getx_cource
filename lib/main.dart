@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'controller/task_controller.dart';
 import 'controller/them_controller.dart';
 import 'firebase_options.dart';
 import 'package:getx_course/screens/splash_screen.dart';
@@ -15,6 +16,7 @@ void main() async {
   await GetStorage.init();
   await NotificationService.init();
   Get.put(ThemeController());
+
 
   runApp(const MyApp());
 }

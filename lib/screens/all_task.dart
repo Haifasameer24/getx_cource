@@ -190,9 +190,9 @@ class AllTasksPage extends StatelessWidget {
                 ),
                 child: Text(
                   _getStatusText(task.status).toUpperCase(),
-                  style: const TextStyle(
+                  style:  TextStyle(
                     fontSize: 12,
-                    color: Colors.white,
+                    color: _getStatusColor(task.status),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -230,11 +230,11 @@ class AllTasksPage extends StatelessWidget {
   Color _getStatusLabelColor(TaskStatus status) {
     switch (status) {
       case TaskStatus.upcoming:
-        return Color(0xFF4B3FAF);
+        return Color(0xFF4B3FAF).withOpacity(0.3);
       case TaskStatus.inProgress:
-        return Colors.orange;
+        return Colors.orange.withOpacity(0.3);
       case TaskStatus.done:
-        return Colors.green;
+        return Colors.green.withOpacity(0.3);
       default:
         return Colors.grey;
     }
@@ -242,11 +242,11 @@ class AllTasksPage extends StatelessWidget {
   Color _getTextColor(TaskStatus status){
     switch (status){
       case TaskStatus.upcoming:
-        return Color(0xFF4B3FAF).withOpacity(0.3);
+        return Color(0xFF4B3FAF);
       case TaskStatus.inProgress:
-        return Colors.orange.withOpacity(0.3);
+        return Colors.orange;
       case TaskStatus.done:
-        return Colors.green.withOpacity(0.3);
+        return Colors.green;
       default:
         return Colors.grey;
     }

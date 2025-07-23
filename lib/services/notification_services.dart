@@ -27,7 +27,6 @@ class NotificationService {
     }
   }
 
-  /// إشعار فوري
   static Future<void> showInstantNotification({
     required int id,
     required String title,
@@ -49,9 +48,8 @@ class NotificationService {
     );
   }
 
-  /// جدولة إشعار بتاريخ ووقت كامل
   static Future<void> scheduleNotification({
-    int id = 1,
+    required int id,
     required String title,
     required String body,
     required int year,
