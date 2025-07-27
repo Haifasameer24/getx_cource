@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/home_controller.dart';
 import '../controller/login_controller.dart';
+import '../controller/profile_image_controller.dart';
 import '../controller/task_controller.dart';
 import '../controller/them_controller.dart';
 
 class SettingsPage extends StatelessWidget {
   final HomeController homeController = Get.put(HomeController());
   final LoginController loginController = Get.put(LoginController());
+  final ProfileImageController profileImageController = Get.put(ProfileImageController());
   final ThemeController themeController = Get.find<ThemeController>();
 
   SettingsPage({Key? key}) : super(key: key);
@@ -23,15 +25,38 @@ class SettingsPage extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircleAvatar(
-              radius: 40,
-              backgroundImage: AssetImage('assets/images/profail.jpeg'),
-            ),
+            Obx(() {
+              final imageUrl = profileImageController.photoUrl.value;
+              return Column(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundImage: imageUrl.isNotEmpty
+                        ? NetworkImage(imageUrl)
+                        : const AssetImage('assets/images/profail.jpeg') as ImageProvider,
+                  ),
+                  const SizedBox(height: 6),
+                  GestureDetector(
+                    onTap: () async {
+                      await profileImageController.pickAndUploadImage();
+                    },
+                    child: Text(
+                      'Change Profile Picture',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }),
             const SizedBox(height: 12),
             TextField(
               controller: homeController.nameController,
               decoration: InputDecoration(
-                hintText: 'Category Description',
+                hintText: 'Enter your name',
                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                 filled: true,
                 fillColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
@@ -62,6 +87,7 @@ class SettingsPage extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildSettingCard(BuildContext context, List<Widget> children) {
     return Card(
@@ -107,30 +133,28 @@ class SettingsPage extends StatelessWidget {
                   Stack(
                     alignment: Alignment.bottomRight,
                     children: [
-                      const CircleAvatar(
-                        radius: 50,
-                        backgroundImage: AssetImage('assets/images/profail.jpeg'),
-                      ),
+                      Obx(() {
+                        final imageUrl = profileImageController.photoUrl.value;
+                        return CircleAvatar(
+                          radius: 50,
+                          backgroundImage: imageUrl.isNotEmpty
+                              ? NetworkImage(imageUrl)
+                              : const AssetImage('assets/images/profail.jpeg') as ImageProvider,
+                        );
+                      }),
                       Positioned(
                         bottom: 0,
                         right: 4,
-                        child: GestureDetector(
-                          onTap: () => _showEditDialog(context),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary,
-                              shape: BoxShape.circle,
-                              boxShadow: const [
-                                BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
-                              ],
-                            ),
-                            child: const Icon(Icons.edit, size: 18, color: Colors.white),
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildCircleButton(context, Icons.edit, () => _showEditDialog(context)),
+                          ],
                         ),
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 10),
                   Obx(() => Text(
                     homeController.userName.value,
@@ -183,3 +207,19 @@ class SettingsPage extends StatelessWidget {
     );
   }
 }
+
+Widget _buildCircleButton(BuildContext context, IconData icon, VoidCallback onTap) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        shape: BoxShape.circle,
+        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+      ),
+      child: Icon(icon, size: 18, color: Colors.white),
+    ),
+  );
+}
+
