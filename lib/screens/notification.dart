@@ -21,31 +21,34 @@ class NotificationPage extends StatelessWidget{
       padding: const EdgeInsets.all(10),
       child: Container(
         padding: EdgeInsets.all(16.0),
-        child: Obx(() {
-          final seenIds = <String>{};
-          final tasks = taskController.filteredTasks
-              .where((task) => task.haveNotify == true)
-              .where((task) => seenIds.add(task.id)) // Remove duplicates
-              .toList();
+        child: ListView(
+          children: [
+            Obx(() {
+            final seenIds = <String>{};
+            final tasks = taskController.filteredTasks
+                .where((task) => task.haveNotify == true)
+                .where((task) => seenIds.add(task.id)) // Remove duplicates
+                .toList();
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Notifications',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: "RobotoSlab",
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Notifications',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: "RobotoSlab",
+                  ),
                 ),
-              ),
-              SizedBox(height: 20),
-              if (tasks.isEmpty)
-                Center(child: Text('There is no task yet', style: theme.textTheme.bodyMedium))
-              else
-                ...tasks.map((task) => _buildTaskCard(task, context)).toList(),
-            ],
-          );
-        }),
+                SizedBox(height: 20),
+                if (tasks.isEmpty)
+                  Center(child: Text('There is no task yet', style: theme.textTheme.bodyMedium))
+                else
+                  ...tasks.map((task) => _buildTaskCard(task, context)).toList(),
+              ],
+            );
+          }),]
+        ),
       ),
     );
   }
